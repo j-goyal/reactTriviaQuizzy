@@ -1,6 +1,6 @@
 import React from "react";
 
-const Loading = () => {
+export const LoadingQuestion = () => {
   return (
     <div className="max-w-screen-md mx-auto p-6 bg-white shadow-lg rounded-lg animate-pulse">
       <h2 className="text-2xl font-bold mb-6 bg-gray-200 h-8 w-2/3 rounded-md"></h2>
@@ -23,4 +23,4 @@ const Loading = () => {
   );
 };
 
-export default Loading;
+//export default Loading;

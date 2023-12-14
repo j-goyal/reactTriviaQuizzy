@@ -1,11 +1,17 @@
 // src/components/Quiz.jsx
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import he from "he";
-import Loading from "./Loading";
+import { LoadingQuestion } from "./Shimmer";
 
 const Quiz = () => {
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [userSelections, setUserSelections] = useState(Array(10).fill(null)); // Assuming 10 questions
+  const [score, setScore] = useState();
+  const [answersChecked, setAnswersChecked] = useState(false);
 
+  console.log(questions);
+  console.log(userSelections);
   // Function to shuffle an array (Fisher-Yates algorithm)
   const shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
@@ -15,49 +21,78 @@ const Quiz = () => {
     return array;
   };
 
-
-//   const fetchQuestions = async () => {
-//     try {
-//       const response = await axios.get(
-//         "https://opentdb.com/api.php?amount=10&type=multiple"
-//       );
-//       setQuestions(response.data.results);
-//       setLoading(false);
-//     } catch (error) {
-//       console.error("Error fetching quiz questions:", error);
-//       setLoading(false);
-//     }
-//   };
-
-  const fetchQuestions2 = async () => {
+  const fetchQuestions = async () => {
     try {
       const response = await fetch(
-        'https://opentdb.com/api.php?amount=10&type=multiple'
+        "https://opentdb.com/api.php?amount=10&type=multiple"
       );
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-  
+
       const data = await response.json();
-      setQuestions(data.results);
+      const shuffledQuestions = data.results.map((question) => ({
+        ...question,
+        options: shuffleArray(
+          question.incorrect_answers.concat(question.correct_answer)
+        ).map((option) => ({
+          text: option,
+          isCorrect: false,
+          isSelected: false,
+        })),
+      }));
+
+      setQuestions(shuffledQuestions);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching quiz questions:', error);
+      console.error("Error fetching quiz questions:", error);
       setLoading(false);
     }
   };
-  
-
-  const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchQuestions2();
+    fetchQuestions();
   }, []);
 
+  const handleOptionChange = (questionIndex, selectedOption) => {
+    setUserSelections((prevSelections) => {
+      const updatedSelections = [...prevSelections];
+      updatedSelections[questionIndex] = selectedOption;
+      return updatedSelections;
+    });
+  };
+
+  const checkAnswersAndCalculateScore = () => {
+    const updatedScore = questions.reduce((totalScore, question, index) => {
+      const userSelection = userSelections[index];
+      const isCorrect = userSelection === question.correct_answer;
+      return isCorrect ? totalScore + 1 : totalScore;
+    }, 0);
+
+    setScore(updatedScore);
+  };
+
+  const handleCheckAnswers = () => {
+    checkAnswersAndCalculateScore();
+
+    // After calculating the score, update the UI to show correct/incorrect options
+    setQuestions((prevQuestions) =>
+      prevQuestions.map((question, index) => ({
+        ...question,
+        options: question.options.map((option) => ({
+          ...option,
+          isSelected: option.text === userSelections[index],
+          isCorrect: option.text === question.correct_answer,
+        })),
+      }))
+    );
+
+    setAnswersChecked(true);
+  };
+
   if (loading) {
-    return <Loading />;
+    return <LoadingQuestion />;
   }
 
   return (
@@ -71,22 +106,28 @@ const Quiz = () => {
           >
             <p className="text-lg mb-4">{he.decode(question.question)}</p>
             <ul className="list-none p-0">
-              {shuffleArray([
-                ...question.incorrect_answers,
-                question.correct_answer,
-              ]).map((option, optionIndex) => (
-                <li key={optionIndex} className="flex items-center mb-2">
+              {question.options.map((option, optionIndex) => (
+                <li
+                key={optionIndex}
+                className={`
+                  flex items-center mb-2 
+                  ${option.isCorrect && "bg-green-200"} 
+                  ${!option.isCorrect && option.isSelected && "bg-red-200"} 
+                  ${option.isSelected ? "text-blue-600" : "text-gray-800"}
+                `}
+              >
                   <input
                     type="radio"
                     name={`question-${index}`}
                     id={`option-${index}-${optionIndex}`}
                     className="mr-2"
+                    value={option.text}
+                    checked={userSelections[index] === option.text}
+                    onChange={() => handleOptionChange(index, option.text)}
+                    disabled={answersChecked}
                   />
-                  <label
-                    htmlFor={`option-${index}-${optionIndex}`}
-                    className="text-gray-800"
-                  >
-                    {he.decode(option)}
+                  <label htmlFor={`option-${index}-${optionIndex}`}>
+                    {he.decode(option.text)}
                   </label>
                 </li>
               ))}
@@ -94,6 +135,15 @@ const Quiz = () => {
           </li>
         ))}
       </ul>
+      <div className="mt-6">
+        <button
+          onClick={handleCheckAnswers}
+          className="bg-blue-500 text-white px-4 py-2 rounded-md mr-4 hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300"
+        >
+          Check Answers
+        </button>
+        <p className="text-md font-bold">Score: {score}</p>
+      </div>
     </div>
   );
 };
