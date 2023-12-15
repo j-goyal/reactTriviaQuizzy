@@ -4,10 +4,9 @@ import { createBrowserRouter, RouterProvider, Route, Outlet } from 'react-router
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Quiz from './components/Quiz';
+import Home from './components/Home';
+import Error from './components/Error';
 
-const Home = () => {
-  return <div>Home Page Content</div>; // You can customize this page
-};
 
 const Results = () => {
   return <div>Results Page Content</div>; // You can customize this page
@@ -17,13 +16,14 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <Layout />,
+    errorElement: <Error />,
     children: [
       {
         path: '',
         element: <Home />,
       },
       {
-        path: 'quiz',
+        path: 'quiz/:quizid',
         element: <Quiz />,
       },
       {

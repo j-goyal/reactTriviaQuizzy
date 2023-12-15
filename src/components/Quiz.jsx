@@ -2,16 +2,19 @@
 import React, { useState, useEffect } from "react";
 import he from "he";
 import { LoadingQuestion } from "./Shimmer";
+import { useParams } from "react-router-dom";
+import { decrypt } from "../utils/EncryptUtils";
 
 const Quiz = () => {
+  const {quizid} = useParams();
+  const {amount, category, difficulty} = decrypt(quizid);
+
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userSelections, setUserSelections] = useState(Array(10).fill(null)); // Assuming 10 questions
   const [score, setScore] = useState();
   const [answersChecked, setAnswersChecked] = useState(false);
 
-  console.log(questions);
-  console.log(userSelections);
   // Function to shuffle an array (Fisher-Yates algorithm)
   const shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
@@ -23,9 +26,18 @@ const Quiz = () => {
 
   const fetchQuestions = async () => {
     try {
-      const response = await fetch(
-        "https://opentdb.com/api.php?amount=10&type=multiple"
-      );
+
+      let apiUrl = "https://opentdb.com/api.php?";
+
+      if (amount) apiUrl += `amount=${amount}&`;
+      
+      if (category) apiUrl += `category=${category}&`;
+      
+      if (difficulty) apiUrl += `difficulty=${difficulty}&`;
+  
+      apiUrl += "type=multiple";
+
+      const response = await fetch(apiUrl);
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -97,7 +109,7 @@ const Quiz = () => {
 
   return (
     <div className="max-w-screen-md mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <h2 className="text-2xl font-bold mb-6">Quiz Component</h2>
+      <h2 className="text-2xl font-bold mb-6">Quiz</h2>
       <ul className="list-none p-0">
         {questions.map((question, index) => (
           <li
