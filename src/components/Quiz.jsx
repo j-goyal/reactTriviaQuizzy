@@ -4,7 +4,8 @@ import he from "he";
 import { LoadingQuestion } from "./Shimmer";
 import { useParams } from "react-router-dom";
 import { Decrypt } from "../utils/EncryptUtils";
-import { FormatTime, CalculatePercentage } from "../utils/TimeUtils";
+import { FormatTime } from "../utils/TimeUtils";
+import { CalculatePercentage } from "../utils/NumberUtils";
 
 const Quiz = () => {
   console.log("Quiz renders");
