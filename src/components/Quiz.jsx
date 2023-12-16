@@ -1,19 +1,37 @@
 // src/components/Quiz.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import he from "he";
 import { LoadingQuestion } from "./Shimmer";
 import { useParams } from "react-router-dom";
-import { decrypt } from "../utils/EncryptUtils";
+import { Decrypt } from "../utils/EncryptUtils";
+import { FormatTime, CalculatePercentage } from "../utils/TimeUtils";
 
 const Quiz = () => {
   const {quizid} = useParams();
-  const {amount, category, difficulty} = decrypt(quizid);
-
+  const {amount, category, difficulty, isQuizTimed} = Decrypt(quizid);
+  var isTimed = (isQuizTimed === 'true');
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userSelections, setUserSelections] = useState(Array(10).fill(null)); // Assuming 10 questions
+  const [userSelections, setUserSelections] = useState(Array(parseInt(amount)).fill(null));
   const [score, setScore] = useState();
   const [answersChecked, setAnswersChecked] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
+  
+  const totalTimeRef = useRef(0);
+
+  const calculateTotalTime = () => {
+    const difficultyTimeMap = {
+      easy: 5,
+      medium: 10,
+      hard: 15,
+    };
+
+    const baseTime = amount * 2;
+    const difficultyTime = difficultyTimeMap[difficulty] || 10;
+    totalTimeRef.current = baseTime + (amount * difficultyTime);
+
+    setRemainingTime(totalTimeRef.current);
+  };
 
   // Function to shuffle an array (Fisher-Yates algorithm)
   const shuffleArray = (array) => {
@@ -25,16 +43,12 @@ const Quiz = () => {
   };
 
   const fetchQuestions = async () => {
-    try {
-
+    try 
+    {
       let apiUrl = "https://opentdb.com/api.php?";
-
       if (amount) apiUrl += `amount=${amount}&`;
-      
       if (category) apiUrl += `category=${category}&`;
-      
       if (difficulty) apiUrl += `difficulty=${difficulty}&`;
-  
       apiUrl += "type=multiple";
 
       const response = await fetch(apiUrl);
@@ -64,10 +78,31 @@ const Quiz = () => {
   };
 
   useEffect(() => {
-    fetchQuestions();
+    const fetchDataAndSetupTimer = async () => {
+      await fetchQuestions();
+      
+      if (isTimed) {
+        calculateTotalTime();
+  
+        const timerInterval = setInterval(() => {
+          setRemainingTime((prevTime) => Math.max(0, prevTime - 1));
+        }, 1000);
+  
+        return () => {
+          clearInterval(timerInterval);
+        };
+      }
+    };
+  
+    fetchDataAndSetupTimer();
   }, []);
+  
 
   const handleOptionChange = (questionIndex, selectedOption) => {
+
+    if(isTimed && remainingTime === 0){
+      return;
+    }
     setUserSelections((prevSelections) => {
       const updatedSelections = [...prevSelections];
       updatedSelections[questionIndex] = selectedOption;
@@ -110,6 +145,11 @@ const Quiz = () => {
   return (
     <div className="max-w-screen-md mx-auto p-6 bg-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold mb-6">Quiz</h2>
+      {isTimed && (
+        <div className={`fixed top-1/4 rounded-md right-0 p-3 ${CalculatePercentage(remainingTime, totalTimeRef.current) > 50 ? 'bg-green-600' : (CalculatePercentage(remainingTime, totalTimeRef.current) > 20 ? 'bg-yellow-600' : 'bg-red-600')} text-white`}>
+          Time Remaining: {FormatTime(remainingTime)}
+        </div>
+      )}
       <ul className="list-none p-0">
         {questions.map((question, index) => (
           <li
@@ -136,7 +176,7 @@ const Quiz = () => {
                     value={option.text}
                     checked={userSelections[index] === option.text}
                     onChange={() => handleOptionChange(index, option.text)}
-                    disabled={answersChecked}
+                    disabled={answersChecked || (isTimed && remainingTime === 0)}
                   />
                   <label htmlFor={`option-${index}-${optionIndex}`}>
                     {he.decode(option.text)}
@@ -155,6 +195,7 @@ const Quiz = () => {
           Check Answers
         </button>
         <p className="text-md font-bold">Score: {score}</p>
+        
       </div>
     </div>
   );

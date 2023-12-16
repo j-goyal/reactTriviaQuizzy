@@ -36,9 +36,9 @@ const router = createBrowserRouter([
 
 function Layout() {
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <main>
+      <main className="flex-grow">
         <h2></h2>
         <Outlet />
       </main>
@@ -46,6 +46,7 @@ function Layout() {
     </div>
   );
 }
+
 
 function App() {
   return (

@@ -1,7 +1,7 @@
-export const encrypt = (data) => {
+export const Encrypt = (data) => {
     return btoa(JSON.stringify(data));
   };
   
-  export const decrypt = (encryptedData) => {
+  export const Decrypt = (encryptedData) => {
     return JSON.parse(atob(encryptedData));
   };

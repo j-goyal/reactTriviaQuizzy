@@ -1,12 +1,13 @@
 // src/components/Home.jsx
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { encrypt } from "../utils/EncryptUtils";
+import { Encrypt } from "../utils/EncryptUtils";
 
 const Home = () => {
   const [category, setCategory] = useState("any");
   const [numQuestions, setNumQuestions] = useState(8);
   const [difficulty, setDifficulty] = useState("any");
+  const [isTimed, setIsTimed] = useState("false");
   const [linkTo, setLinkTo] = useState("#");
 
   useEffect(() => {
@@ -14,11 +15,16 @@ const Home = () => {
       amount: numQuestions,
       ...(category !== "any" && { category }),
       ...(difficulty !== "any" && { difficulty }),
+      isQuizTimed : isTimed
     };
 
-    const newEncryptedParams = encrypt(quizParams);
-    setLinkTo(Object.keys(newEncryptedParams).length > 0 ? `/quiz/${newEncryptedParams}` : "#");
-  }, [numQuestions, category, difficulty]);
+    const newEncryptedParams = Encrypt(quizParams);
+    setLinkTo(
+      Object.keys(newEncryptedParams).length > 0
+        ? `/quiz/${newEncryptedParams}`
+        : "#"
+    );
+  }, [numQuestions, category, difficulty, isTimed]);
 
   return (
     <div className="max-w-screen-md mx-auto p-6 bg-white shadow-lg rounded-lg">
@@ -79,10 +85,12 @@ const Home = () => {
             id="numQuestions"
             name="numQuestions"
             min="3"
+            max="20"
             value={numQuestions}
-            onChange={(e) =>
-              setNumQuestions(Math.max(1, parseInt(e.target.value, 10)))
-            }
+            onChange={(e) => {
+              const value = Math.max(3, Math.min(20, parseInt(e.target.value, 10)));
+              setNumQuestions(value);
+            }}
             className="p-2 border rounded-md"
           />
         </div>
@@ -106,9 +114,25 @@ const Home = () => {
             <option value="hard">Hard</option>
           </select>
         </div>
-        <Link
-          to={linkTo}
-        >
+        <div className="flex flex-col">
+          <label
+            htmlFor="isTimed"
+            className="text-sm font-medium text-gray-600 mb-1"
+          >
+            Countdown Quiz:
+          </label>
+          <select
+            id="isTimed"
+            name="isTimed"
+            className="p-2 border rounded-md"
+            value={isTimed}
+            onChange={(e) => setIsTimed(e.target.value)}
+          >
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
+        </div>
+        <Link to={linkTo}>
           <button
             type="button"
             className="bg-blue-500 text-white mt-4 py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300"
