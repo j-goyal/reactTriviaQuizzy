@@ -7,6 +7,7 @@ import { Decrypt } from "../utils/EncryptUtils";
 import { FormatTime, CalculatePercentage } from "../utils/TimeUtils";
 
 const Quiz = () => {
+  console.log("Quiz renders");
   const {quizid} = useParams();
   const {amount, category, difficulty, isQuizTimed} = Decrypt(quizid);
   var isTimed = (isQuizTimed === 'true');
@@ -18,6 +19,7 @@ const Quiz = () => {
   const [remainingTime, setRemainingTime] = useState(0);
   
   const totalTimeRef = useRef(0);
+  const timerIntervalRef = useRef(null);
 
   const calculateTotalTime = () => {
     const difficultyTimeMap = {
@@ -84,12 +86,12 @@ const Quiz = () => {
       if (isTimed) {
         calculateTotalTime();
   
-        const timerInterval = setInterval(() => {
+        timerIntervalRef.current = setInterval(() => {
           setRemainingTime((prevTime) => Math.max(0, prevTime - 1));
         }, 1000);
   
         return () => {
-          clearInterval(timerInterval);
+          clearInterval(timerIntervalRef.current);
         };
       }
     };
@@ -136,6 +138,9 @@ const Quiz = () => {
     );
 
     setAnswersChecked(true);
+    if (isTimed) {
+      clearInterval(timerIntervalRef.current);
+    }
   };
 
   if (loading) {

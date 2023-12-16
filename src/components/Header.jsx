@@ -5,7 +5,7 @@ import { Link, NavLink } from 'react-router-dom';
 const Header = () => {
   return (
     <header className="bg-blue-500 text-white p-3 flex justify-between items-center">
-      <Link to="/" className="text-2xl font-bold">
+      <Link to="/" className="text-xl font-bold">
         TriviaQuizzy
       </Link>
       <nav>

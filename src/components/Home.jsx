@@ -27,8 +27,8 @@ const Home = () => {
   }, [numQuestions, category, difficulty, isTimed]);
 
   return (
-    <div className="max-w-screen-md mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <h2 className="text-4xl font-bold mb-6 text-center text-blue-600">
+    <div className="max-w-screen-md mx-auto mt-2 p-6 bg-white shadow-lg rounded-lg">
+      <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">
         Welcome to TriviaQuizzy
       </h2>
       <form className="space-y-4">
@@ -42,7 +42,7 @@ const Home = () => {
           <select
             id="category"
             name="category"
-            className="p-2 border rounded-md"
+            className="p-2 border rounded-md text-sm"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
@@ -91,7 +91,7 @@ const Home = () => {
               const value = Math.max(3, Math.min(20, parseInt(e.target.value, 10)));
               setNumQuestions(value);
             }}
-            className="p-2 border rounded-md"
+            className="p-2 border rounded-md text-sm"
           />
         </div>
         <div className="flex flex-col">
@@ -104,7 +104,7 @@ const Home = () => {
           <select
             id="difficulty"
             name="difficulty"
-            className="p-2 border rounded-md"
+            className="p-2 border rounded-md text-sm"
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
           >
@@ -124,7 +124,7 @@ const Home = () => {
           <select
             id="isTimed"
             name="isTimed"
-            className="p-2 border rounded-md"
+            className="p-2 border rounded-md text-sm"
             value={isTimed}
             onChange={(e) => setIsTimed(e.target.value)}
           >
