@@ -8,16 +8,19 @@ import { FormatTime, CalculatePercentage } from "../utils/TimeUtils";
 
 const Quiz = () => {
   console.log("Quiz renders");
-  const {quizid} = useParams();
-  const {amount, category, difficulty, isQuizTimed} = Decrypt(quizid);
-  var isTimed = (isQuizTimed === 'true');
+  const { quizid } = useParams();
+  const { amount, category, difficulty, isQuizTimed } = Decrypt(quizid);
+  var isTimed = isQuizTimed === "true";
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userSelections, setUserSelections] = useState(Array(parseInt(amount)).fill(null));
+  const [userSelections, setUserSelections] = useState(
+    Array(parseInt(amount)).fill(null)
+  );
   const [score, setScore] = useState();
   const [answersChecked, setAnswersChecked] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
-  
+  const [error, setError] = useState(null);
+
   const totalTimeRef = useRef(0);
   const timerIntervalRef = useRef(null);
 
@@ -30,7 +33,7 @@ const Quiz = () => {
 
     const baseTime = amount * 2;
     const difficultyTime = difficultyTimeMap[difficulty] || 10;
-    totalTimeRef.current = baseTime + (amount * difficultyTime);
+    totalTimeRef.current = baseTime + amount * difficultyTime;
 
     setRemainingTime(totalTimeRef.current);
   };
@@ -45,8 +48,7 @@ const Quiz = () => {
   };
 
   const fetchQuestions = async () => {
-    try 
-    {
+    try {
       let apiUrl = "https://opentdb.com/api.php?";
       if (amount) apiUrl += `amount=${amount}&`;
       if (category) apiUrl += `category=${category}&`;
@@ -75,34 +77,56 @@ const Quiz = () => {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching quiz questions:", error);
+      // Update state to indicate an error
+      setQuestions([]);
       setLoading(false);
+      setError("Failed to fetch quiz questions. Please try again.");
     }
   };
+
+  // Reset state when quizid changes
+  useEffect(() => {
+    setQuestions([]);
+    setLoading(true);
+    setUserSelections(Array(parseInt(amount)).fill(null));
+    setScore(undefined);
+    setAnswersChecked(false);
+    setRemainingTime(0);
+
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
+  }, [quizid]);
 
   useEffect(() => {
     const fetchDataAndSetupTimer = async () => {
       await fetchQuestions();
-      
+
       if (isTimed) {
         calculateTotalTime();
-  
+
         timerIntervalRef.current = setInterval(() => {
           setRemainingTime((prevTime) => Math.max(0, prevTime - 1));
         }, 1000);
-  
+
         return () => {
           clearInterval(timerIntervalRef.current);
         };
       }
     };
-  
+
     fetchDataAndSetupTimer();
-  }, []);
-  
+
+    // Clear the interval when the component unmounts
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, [quizid]);
 
   const handleOptionChange = (questionIndex, selectedOption) => {
-
-    if(isTimed && remainingTime === 0){
+    if (isTimed && remainingTime === 0) {
       return;
     }
     setUserSelections((prevSelections) => {
@@ -147,11 +171,27 @@ const Quiz = () => {
     return <LoadingQuestion />;
   }
 
+  if (error) {
+    return (
+      <div className="max-w-screen-md mx-auto mt-2 p-6 bg-white shadow-lg rounded-lg">
+        <div className="text-red-500 font-bold text-md">{error}</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-screen-md mx-auto p-6 bg-white shadow-lg rounded-lg">
+    <div className="max-w-screen-md mx-auto mt-2 p-6 bg-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold mb-6">Quiz</h2>
       {isTimed && (
-        <div className={`fixed top-1/4 rounded-md right-0 p-3 ${CalculatePercentage(remainingTime, totalTimeRef.current) > 50 ? 'bg-green-600' : (CalculatePercentage(remainingTime, totalTimeRef.current) > 20 ? 'bg-yellow-600' : 'bg-red-600')} text-white`}>
+        <div
+          className={`fixed top-20 opacity-80 rounded-md right-0 p-3 ${
+            CalculatePercentage(remainingTime, totalTimeRef.current) > 50
+              ? "bg-green-600"
+              : CalculatePercentage(remainingTime, totalTimeRef.current) > 20
+              ? "bg-yellow-600"
+              : "bg-red-600"
+          } text-white`}
+        >
           Time Remaining: {FormatTime(remainingTime)}
         </div>
       )}
@@ -165,14 +205,14 @@ const Quiz = () => {
             <ul className="list-none p-0">
               {question.options.map((option, optionIndex) => (
                 <li
-                key={optionIndex}
-                className={`
+                  key={optionIndex}
+                  className={`
                   flex items-center mb-2 
                   ${option.isCorrect && "bg-green-200"} 
                   ${!option.isCorrect && option.isSelected && "bg-red-200"} 
                   ${option.isSelected ? "text-blue-600" : "text-gray-800"}
                 `}
-              >
+                >
                   <input
                     type="radio"
                     name={`question-${index}`}
@@ -181,7 +221,9 @@ const Quiz = () => {
                     value={option.text}
                     checked={userSelections[index] === option.text}
                     onChange={() => handleOptionChange(index, option.text)}
-                    disabled={answersChecked || (isTimed && remainingTime === 0)}
+                    disabled={
+                      answersChecked || (isTimed && remainingTime === 0)
+                    }
                   />
                   <label htmlFor={`option-${index}-${optionIndex}`}>
                     {he.decode(option.text)}
@@ -200,7 +242,6 @@ const Quiz = () => {
           Check Answers
         </button>
         <p className="text-md font-bold">Score: {score}</p>
-        
       </div>
     </div>
   );
