@@ -14,8 +14,8 @@ const Header = () => {
   function generateRandomQuizLink() {
     const quizParams = {
       amount: GenerateUniqueRandomNumber(3, 12, previousRandomNumber),
-      ...(Math.random() < 0.25 && { category: Math.floor(Math.random() * (30 - 12 + 1)) + 12}),
-      ...(Math.random() < 0.3 && { difficulty: difficultyOptions[Math.floor(Math.random() * difficultyOptions.length)]}),
+      ...(Math.random() < 0.3 && { category: Math.floor(Math.random() * (30 - 12 + 1)) + 12}),
+      ...(Math.random() < 0.45 && { difficulty: difficultyOptions[Math.floor(Math.random() * difficultyOptions.length)]}),
     };
   
     return `/quiz/${Encrypt(quizParams)}`;
@@ -38,7 +38,7 @@ const Header = () => {
         </NavLink>
         <NavLink to={randomQuizLink} className={`mx-2 hover:text-gray-300 ${location.pathname.startsWith('/quiz') ? 'text-gray-700' : ''}`}
            onClick={handleRandomQuizClick}>
-          Random Quiz
+          Quiz
         </NavLink>
         <NavLink to="/results" className={({isActive}) => `mx-2 hover:text-gray-300 ${isActive ? "text-gray-700" : ""}`}>
           Results

@@ -14,9 +14,7 @@ const Quiz = () => {
   var isTimed = isQuizTimed === "true";
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userSelections, setUserSelections] = useState(
-    Array(parseInt(amount)).fill(null)
-  );
+  const [userSelections, setUserSelections] = useState(Array(parseInt(amount)).fill(null));
   const [score, setScore] = useState();
   const [answersChecked, setAnswersChecked] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
@@ -242,7 +240,16 @@ const Quiz = () => {
         >
           Check Answers
         </button>
-        <p className="text-md font-bold">Score: {score}</p>
+        {answersChecked && (
+          <div className="text-md font-bold mt-4">
+            {score > amount / 2 ? (
+              <p className="text-green-500">Congratulations! You did well.</p>
+            ) : (
+              <p className="text-red-500">Keep practicing. You can do better!</p>
+            )}
+            Your Score: {score}/{amount}
+          </div>
+        )}
       </div>
     </div>
   );
