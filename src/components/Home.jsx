@@ -29,7 +29,7 @@ const Home = () => {
   return (
     <div className="max-w-screen-md mx-auto mt-2 p-6 bg-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">
-        Welcome to TriviaQuizzy
+        Welcome to QuestQuizzy
       </h2>
       <form className="space-y-4">
         <div className="flex flex-col">
