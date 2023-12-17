@@ -30,7 +30,7 @@ const Header = () => {
   return (
     <header className="bg-blue-500 text-white p-3 flex justify-between items-center">
       <Link to="/" className="text-xl font-bold">
-        TriviaQuizzy
+      QuestQuizzy
       </Link>
       <nav>
         <NavLink to="/" className={({isActive}) => `mx-2 hover:text-gray-300 ${isActive ? "text-gray-700" : ""}`}>

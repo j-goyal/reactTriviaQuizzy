@@ -8,7 +8,6 @@ import { FormatTime } from "../utils/TimeUtils";
 import { CalculatePercentage } from "../utils/NumberUtils";
 
 const Quiz = () => {
-  console.log("Quiz renders");
   const { quizid } = useParams();
   const { amount, category, difficulty, isQuizTimed } = Decrypt(quizid);
   var isTimed = isQuizTimed === "true";
