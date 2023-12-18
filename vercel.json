@@ -1,7 +1,5 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/quiz/:quizid", "destination": "/quiz" },
-    { "source": "/results", "destination": "/results" }
-  ]
-}
+    "rewrites":  [
+      {"source": "/(.*)", "destination": "/"}
+    ]
+  }
