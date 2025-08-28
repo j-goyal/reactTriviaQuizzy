@@ -38,10 +38,7 @@ const Header = () => {
         </NavLink>
         <NavLink to={randomQuizLink} className={`mx-2 hover:text-gray-300 ${location.pathname.startsWith('/quiz') ? 'text-gray-700' : ''}`}
            onClick={handleRandomQuizClick}>
-          Quiz
-        </NavLink>
-        <NavLink to="/results" className={({isActive}) => `mx-2 hover:text-gray-300 ${isActive ? "text-gray-700" : ""}`}>
-          Results
+          Random Quiz
         </NavLink>
       </nav>
     </header>

@@ -25,11 +25,7 @@ const router = createBrowserRouter([
       {
         path: 'quiz/:quizid',
         element: <Quiz />,
-      },
-      {
-        path: 'results',
-        element: <Results />,
-      },
+      }
     ],
   },
 ]);
